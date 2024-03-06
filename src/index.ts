@@ -41,7 +41,7 @@ app.post("/translate", async (req, res) => {
 
       return {
         contents: newContents,
-        targetLang: targetLang,
+        lang: targetLang,
       };
     })
   );
