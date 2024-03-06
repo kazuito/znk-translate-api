@@ -2,9 +2,6 @@ import express from "express";
 import * as deepl from "deepl-node";
 import bodyParser from "body-parser";
 import { translate } from "./translate";
-import { is } from "cheerio/lib/api/traversing";
-
-const translator = new deepl.Translator(process.env.DEEPL_API_KEY || "");
 
 const app = express();
 
