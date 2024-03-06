@@ -2,11 +2,6 @@ import * as deepl from "deepl-node";
 
 const translator = new deepl.Translator(process.env.DEEPL_API_KEY || "");
 
-type TranslationContents = {
-  title: string;
-  content: string;
-};
-
 export async function translate(
   contents: string[],
   sourceLang: deepl.SourceLanguageCode,
