@@ -16,7 +16,9 @@ export async function textTranslate(
     }
   );
 
-  return blockTranslate(translated.text, sourceLang, targetLang);
+  return contentFilter(
+    await blockTranslate(translated.text, sourceLang, targetLang)
+  );
 }
 
 export async function blockTranslate(
@@ -65,4 +67,14 @@ export async function objTranslate(
   }
 
   return translatedObj;
+}
+
+export function contentFilter(text: string): string {
+  // Add a newline before and after the embed YouTube URL
+  text = text.replace(
+    /(?<="wp-block-embed__wrapper">\s*)(https?:\/\/www\.youtube\.com\/watch.*?)(?=<\/div>)/,
+    "\n$1\n"
+  );
+
+  return text;
 }

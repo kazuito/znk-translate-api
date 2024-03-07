@@ -15,14 +15,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.post("/translate", async (req, res) => {
-  // console.log(req.body);
-
   const input: Input = req.body;
   const targetLangs = Array.isArray(input.targetLang)
     ? input.targetLang
     : [input.targetLang];
-
-  // console.log(targetLangs);
 
   const resultBlocks = await Promise.all(
     targetLangs.map(async (targetLang) => {
