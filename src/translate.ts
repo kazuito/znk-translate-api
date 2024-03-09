@@ -19,21 +19,22 @@ export class Translator {
   }
 
   public async translate(): Promise<{ [key: string]: any }> {
-    return await this.objTranslate(this.inputObj);
+    return await this.objTranslate(this.inputObj, 0);
   }
 
-  private async objTranslate(obj: { [key: string]: any }): Promise<any> {
+  private async objTranslate(
+    obj: { [key: string]: any },
+    depth: number
+  ): Promise<any> {
     const newObj: any = {};
 
     for (const key in obj) {
       const val = obj[key];
 
-      console.log(val);
-
       if (typeof obj[key] === "string") {
-        newObj[key] = await this.textTranslate(val);
+        newObj[key] = await this.textTranslate(val, depth);
       } else if (typeof obj[key] === "object") {
-        newObj[key] = await this.objTranslate(val);
+        newObj[key] = await this.objTranslate(val, depth + 1);
       } else {
         newObj[key] = obj[key];
       }
@@ -42,7 +43,11 @@ export class Translator {
     return newObj;
   }
 
-  private async textTranslate(text: string): Promise<string> {
+  private async textTranslate(text: string, depth: number): Promise<string> {
+    console.log("depth: ", depth);
+
+    console.log(text);
+
     const translated = await deeplTranslate.translateText(
       text,
       this.sourceLang,
@@ -52,17 +57,19 @@ export class Translator {
       }
     );
 
-    return this.contentFilter(await this.blockTranslate(translated.text));
+    return this.contentFilter(
+      await this.blockTranslate(translated.text, depth)
+    );
   }
 
-  private async blockTranslate(text: string): Promise<string> {
+  private async blockTranslate(text: string, depth: number): Promise<string> {
     const jsons = text.match(/(?<=<!-- wp:.*?){.*?}(?= \/?-->$)/gm);
 
     if (jsons) {
       const translatedJsons = await Promise.all(
         jsons.map(async (json) => {
           const obj = JSON.parse(json);
-          const translatedObj = await this.objTranslate(obj);
+          const translatedObj = await this.objTranslate(obj, depth + 1);
           return JSON.stringify(translatedObj);
         })
       );
