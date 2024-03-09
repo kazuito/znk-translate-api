@@ -1,7 +1,7 @@
 import express from "express";
 import * as deepl from "deepl-node";
 import bodyParser from "body-parser";
-import { objTranslate } from "./translate";
+import { Translator } from "./translate";
 
 const app = express();
 
@@ -24,11 +24,13 @@ app.post("/translate", async (req, res) => {
 
   const resultBlocks = await Promise.all(
     targetLangs.map(async (targetLang) => {
-      const newContents = await objTranslate(
-        input.contents,
+      const translator = new Translator(
         input.sourceLang,
-        targetLang
+        targetLang,
+        input.contents
       );
+
+      const newContents = await translator.translate();
 
       return {
         contents: newContents,
