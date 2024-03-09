@@ -15,6 +15,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.post("/translate", async (req, res) => {
+  console.log("## Request ##", new Date().toLocaleString());
+
   const input: Input = req.body;
   const targetLangs = Array.isArray(input.targetLang)
     ? input.targetLang
@@ -38,4 +40,6 @@ app.post("/translate", async (req, res) => {
   res.json(resultBlocks);
 });
 
-const server = app.listen(3000, () => console.log("Server is running..."));
+const server = app.listen(3000, "0.0.0.0", () =>
+  console.log("Server is running...")
+);
