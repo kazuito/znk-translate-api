@@ -23,7 +23,6 @@ export class Translator {
     const result = await this.resolveHash(
       JSON.stringify(await this.objTranslate(this.inputObj, 0))
     );
-    console.log(result);
     return JSON.parse(result);
   }
 
@@ -49,16 +48,14 @@ export class Translator {
   }
 
   private async textTranslate(text: string, depth: number): Promise<string> {
-    console.log("depth: ", depth);
-
-    console.log(text);
-
     const translated = await (async () => {
       if (depth > 0) {
         const hash = uuidv4();
         this.translateMap.set(hash, text);
         return hash;
       }
+
+      this.showTranslatingMessage();
 
       return deeplTranslate
         .translateText(text, this.sourceLang, this.targetLang, {
@@ -105,6 +102,8 @@ export class Translator {
 
     const values = Array.from(this.translateMap.values());
 
+    this.showTranslatingMessage();
+
     const translatedValues = await deeplTranslate.translateText(
       values,
       this.sourceLang,
@@ -116,11 +115,15 @@ export class Translator {
     this.translateMap.forEach((_, key) => {
       text = text.replace(
         key,
-        translatedValues[i]?.text.replace(/"/g, '\u201D') ?? ""
+        translatedValues[i]?.text.replace(/"/g, "\u201D") ?? ""
       );
       i++;
     });
 
     return text;
+  }
+
+  private async showTranslatingMessage() {
+    console.log("Translating to " + this.targetLang + "...");
   }
 }
