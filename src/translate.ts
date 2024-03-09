@@ -72,7 +72,7 @@ export async function objTranslate(
 export function contentFilter(text: string): string {
   // Add a newline before and after the embed YouTube URL
   text = text.replace(
-    /(?<="wp-block-embed__wrapper">\s*)(https?:\/\/www\.youtube\.com\/watch.*?)(?=<\/div>)/,
+    /(?<="wp-block-embed__wrapper">\s*)(https?:\/\/*?)(?=<\/div>)/,
     "\n$1\n"
   );
 
