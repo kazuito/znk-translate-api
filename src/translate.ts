@@ -1,6 +1,6 @@
 import * as deepl from "deepl-node";
 
-const translator = new deepl.Translator(process.env.DEEPL_API_KEY || "");
+const deeplTranslate = new deepl.Translator(process.env.DEEPL_API_KEY || "");
 
 // export async function textTranslate(
 //   text: string,
@@ -120,7 +120,7 @@ export class Translator {
   }
 
   private async textTranslate(text: string): Promise<string> {
-    const translated = await translator.translateText(
+    const translated = await deeplTranslate.translateText(
       text,
       this.sourceLang,
       this.targetLang,
