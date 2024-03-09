@@ -55,8 +55,6 @@ export class Translator {
         return hash;
       }
 
-      this.showTranslatingMessage();
-
       return deeplTranslate
         .translateText(text, this.sourceLang, this.targetLang, {
           tagHandling: "html",
@@ -102,8 +100,6 @@ export class Translator {
 
     const values = Array.from(this.translateMap.values());
 
-    this.showTranslatingMessage();
-
     const translatedValues = await deeplTranslate.translateText(
       values,
       this.sourceLang,
@@ -121,9 +117,5 @@ export class Translator {
     });
 
     return text;
-  }
-
-  private async showTranslatingMessage() {
-    console.log("Translating to " + this.targetLang + "...");
   }
 }

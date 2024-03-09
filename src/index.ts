@@ -24,6 +24,8 @@ app.post("/translate", async (req, res) => {
 
   const formattedTargetLangs = formatLangs(targetLangs);
 
+  console.log("Translating...");
+
   const resultBlocks = await Promise.all(
     formattedTargetLangs.map(async (targetLang) => {
       const translator = new Translator(
@@ -41,8 +43,8 @@ app.post("/translate", async (req, res) => {
     })
   );
 
-  res.json(resultBlocks);
   console.log("Done!");
+  res.json(resultBlocks);
 });
 
 const server = app.listen(4009, "0.0.0.0", () =>
