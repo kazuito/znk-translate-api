@@ -1,4 +1,5 @@
 import * as deepl from "deepl-node";
+import { v4 as uuidv4 } from "uuid";
 
 const deeplTranslate = new deepl.Translator(process.env.DEEPL_API_KEY || "");
 
@@ -18,8 +19,12 @@ export class Translator {
     this.inputObj = obj;
   }
 
-  public async translate(): Promise<{ [key: string]: any }> {
-    return await this.objTranslate(this.inputObj, 0);
+  public async translate() {
+    const result = await this.resolveHash(
+      JSON.stringify(await this.objTranslate(this.inputObj, 0))
+    );
+    console.log(result);
+    return JSON.parse(result);
   }
 
   private async objTranslate(
@@ -48,18 +53,21 @@ export class Translator {
 
     console.log(text);
 
-    const translated = await deeplTranslate.translateText(
-      text,
-      this.sourceLang,
-      this.targetLang,
-      {
-        tagHandling: "html",
+    const translated = await (async () => {
+      if (depth > 0) {
+        const hash = uuidv4();
+        this.translateMap.set(hash, text);
+        return hash;
       }
-    );
 
-    return this.contentFilter(
-      await this.blockTranslate(translated.text, depth)
-    );
+      return deeplTranslate
+        .translateText(text, this.sourceLang, this.targetLang, {
+          tagHandling: "html",
+        })
+        .then((res) => res.text);
+    })();
+
+    return this.contentFilter(await this.blockTranslate(translated, depth));
   }
 
   private async blockTranslate(text: string, depth: number): Promise<string> {
@@ -88,6 +96,30 @@ export class Translator {
       /(?<=<div class="wp-block-embed__wrapper">\s*)(https?:\/\/.*?)(?=<\/div>)/g,
       "\n$1\n"
     );
+
+    return text;
+  }
+
+  private async resolveHash(text: string) {
+    if (this.translateMap.size === 0) return text;
+
+    const values = Array.from(this.translateMap.values());
+
+    const translatedValues = await deeplTranslate.translateText(
+      values,
+      this.sourceLang,
+      this.targetLang
+    );
+
+    let i = 0;
+
+    this.translateMap.forEach((_, key) => {
+      text = text.replace(
+        key,
+        translatedValues[i]?.text.replace(/"/g, '\u201D') ?? ""
+      );
+      i++;
+    });
 
     return text;
   }

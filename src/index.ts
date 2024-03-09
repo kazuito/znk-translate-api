@@ -22,8 +22,10 @@ app.post("/translate", async (req, res) => {
     ? input.targetLang
     : [input.targetLang];
 
+  const formattedTargetLangs = formatLangs(targetLangs);
+
   const resultBlocks = await Promise.all(
-    targetLangs.map(async (targetLang) => {
+    formattedTargetLangs.map(async (targetLang) => {
       const translator = new Translator(
         input.sourceLang,
         targetLang,
@@ -38,6 +40,7 @@ app.post("/translate", async (req, res) => {
       };
     })
   );
+  console.log(resultBlocks);
 
   res.json(resultBlocks);
 });
@@ -45,3 +48,10 @@ app.post("/translate", async (req, res) => {
 const server = app.listen(4009, "0.0.0.0", () =>
   console.log("Server is running...")
 );
+
+function formatLangs(langs: string[]) {
+  return langs.map((lang) => {
+    if (lang === "en") return "en-US";
+    return lang as deepl.TargetLanguageCode;
+  });
+}
