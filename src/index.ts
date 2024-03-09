@@ -1,7 +1,7 @@
 import express from "express";
 import * as deepl from "deepl-node";
 import bodyParser from "body-parser";
-import { objTranslate } from "./translate";
+import { Translator } from "./translate";
 
 const app = express();
 
@@ -22,13 +22,17 @@ app.post("/translate", async (req, res) => {
     ? input.targetLang
     : [input.targetLang];
 
+  const formattedTargetLangs = formatLangs(targetLangs);
+
   const resultBlocks = await Promise.all(
-    targetLangs.map(async (targetLang) => {
-      const newContents = await objTranslate(
-        input.contents,
+    formattedTargetLangs.map(async (targetLang) => {
+      const translator = new Translator(
         input.sourceLang,
-        targetLang
+        targetLang,
+        input.contents
       );
+
+      const newContents = await translator.translate();
 
       return {
         contents: newContents,
@@ -36,6 +40,7 @@ app.post("/translate", async (req, res) => {
       };
     })
   );
+  console.log(resultBlocks);
 
   res.json(resultBlocks);
 });
@@ -43,3 +48,10 @@ app.post("/translate", async (req, res) => {
 const server = app.listen(4009, "0.0.0.0", () =>
   console.log("Server is running...")
 );
+
+function formatLangs(langs: string[]) {
+  return langs.map((lang) => {
+    if (lang === "en") return "en-US";
+    return lang as deepl.TargetLanguageCode;
+  });
+}
