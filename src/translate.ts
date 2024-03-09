@@ -1,5 +1,6 @@
 import * as deepl from "deepl-node";
 import { v4 as uuidv4 } from "uuid";
+import { includesJapanese } from "./utils";
 
 const deeplTranslate = new deepl.Translator(process.env.DEEPL_API_KEY || "");
 
@@ -50,6 +51,8 @@ export class Translator {
   private async textTranslate(text: string, depth: number): Promise<string> {
     const translated = await (async () => {
       if (depth > 0) {
+        if (!includesJapanese(text)) return text;
+
         const hash = uuidv4();
         this.translateMap.set(hash, text);
         return hash;
