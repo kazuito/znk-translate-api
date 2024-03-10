@@ -26,25 +26,26 @@ app.post("/translate", async (req, res) => {
 
     const formattedTargetLangs = formatLangs(targetLangs);
 
-    logger.trace(`Translating to ${formattedTargetLangs.join(", ")}`);
+    logger.trace(`Target languages: ${formattedTargetLangs.join(", ")}`);
 
-    const resultBlocks = await Promise.all(
-      formattedTargetLangs.map(async (targetLang) => {
-        const translator = new Translator(
-          input.sourceLang,
-          targetLang,
-          input.contents
-        );
+    const resultBlocks = [];
 
-        const newContents = await translator.translate();
+    for (const targetLang of formattedTargetLangs) {
+      logger.trace(`Translating to ${targetLang}...`);
 
-        return {
-          contents: newContents,
-          lang: targetLang,
-        };
-      })
-    );
+      const translator = new Translator(
+        input.sourceLang,
+        targetLang,
+        input.contents
+      );
 
+      const newContents = await translator.translate();
+
+      resultBlocks.push({
+        contents: newContents,
+        lang: targetLang,
+      });
+    }
     logger.trace("Done!");
     res.json(resultBlocks);
   } catch (err) {
