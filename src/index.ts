@@ -3,7 +3,9 @@ import * as deepl from "deepl-node";
 import bodyParser from "body-parser";
 import { Translator } from "./translate";
 import { logger } from "./logger";
+import { config } from "dotenv";
 
+config();
 const app = express();
 
 type Input = {
