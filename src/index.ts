@@ -24,9 +24,9 @@ app.post("/translate", async (req, res) => {
       ? input.targetLang
       : [input.targetLang];
 
-    const formattedTargetLangs = formatLangs(targetLangs);
+    logger.trace(`Target languages: ${targetLangs.join(", ")}`);
 
-    logger.trace(`Target languages: ${formattedTargetLangs.join(", ")}`);
+    const formattedTargetLangs = formatLangs(targetLangs);
 
     const resultBlocks = [];
 
@@ -54,13 +54,14 @@ app.post("/translate", async (req, res) => {
   }
 });
 
-const server = app.listen(4009, "0.0.0.0", () =>
+const server = app.listen(Number(process.env.PORT), "0.0.0.0", () =>
   console.log("Server is running...")
 );
 
 function formatLangs(langs: string[]) {
   return langs.map((lang) => {
     if (lang === "en") return "en-US";
+    if (lang === "pt") return "pt-PT";
     return lang as deepl.TargetLanguageCode;
   });
 }
