@@ -32,24 +32,30 @@ app.post("/translate", async (req, res) => {
 
     const formattedTargetLangs = formatLangs(targetLangs);
 
-    const resultBlocks = [];
+    const resultContents: Promise<any>[] = [];
+    const resultLangs: string[] = [];
 
-    for (const targetLang of formattedTargetLangs) {
-      logger.trace(`Translating to ${targetLang}...`);
+    const resultBlocks = await Promise.all(
+      formattedTargetLangs.map(async (targetLang) => {
+        logger.trace(`Translating to ${targetLang}...`);
 
-      const translator = new Translator(
-        input.sourceLang,
-        targetLang,
-        input.contents
-      );
+        const translator = new Translator(
+          input.sourceLang,
+          targetLang,
+          input.contents
+        );
 
-      const newContents = await translator.translate();
+        const newContents = await translator.translate();
 
-      resultBlocks.push({
-        contents: newContents,
-        lang: targetLang,
-      });
-    }
+        return {
+          lang: targetLang,
+          contents: newContents,
+        };
+      })
+    );
+
+    console.log(resultBlocks);
+
     logger.trace("Done!");
     res.json(resultBlocks);
   } catch (err) {

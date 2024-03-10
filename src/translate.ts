@@ -26,11 +26,13 @@ export class Translator {
     this.inputObj = obj;
   }
 
-  public async translate() {
-    const result = await this.resolveHash(
-      JSON.stringify(await this.objTranslate(this.inputObj, 0))
-    );
-    return JSON.parse(result);
+  public translate() {
+    return new Promise(async (resolve, reject) => {
+      const result = await this.resolveHash(
+        JSON.stringify(await this.objTranslate(this.inputObj, 0))
+      );
+      resolve(JSON.parse(result));
+    });
   }
 
   private async objTranslate(
