@@ -26,9 +26,7 @@ app.post("/translate", async (req, res) => {
 
   try {
     const input: Input = req.body;
-    const targetLangs = Array.isArray(input.targetLang)
-      ? input.targetLang
-      : [input.targetLang];
+    const targetLangs = Object.values(input.targetLang);
 
     logger.trace(`Target languages: ${targetLangs.join(", ")}`);
 
