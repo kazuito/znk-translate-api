@@ -4,8 +4,12 @@ import bodyParser from "body-parser";
 import { Translator } from "./translate";
 import { logger } from "./logger";
 import { config } from "dotenv";
+import path from "path";
 
-config();
+config({
+  path: path.join(__dirname, "../.env"),
+});
+
 const app = express();
 
 type Input = {

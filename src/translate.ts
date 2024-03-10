@@ -1,6 +1,12 @@
 import * as deepl from "deepl-node";
 import { v4 as uuidv4 } from "uuid";
 import { includesJapanese } from "./utils";
+import { config } from "dotenv";
+import path from "path";
+
+config({
+  path: path.join(__dirname, "../.env"),
+});
 
 const deeplTranslate = new deepl.Translator(process.env.DEEPL_API_KEY || "");
 
