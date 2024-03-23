@@ -13,6 +13,7 @@ config({
 const app = express();
 
 type Input = {
+  accessKey: string;
   contents: { [key: string]: string };
   sourceLang: deepl.SourceLanguageCode;
   targetLang: deepl.TargetLanguageCode | deepl.TargetLanguageCode[];
@@ -26,6 +27,12 @@ app.post("/translate", async (req, res) => {
 
   try {
     const input: Input = req.body;
+
+    if (input.accessKey !== process.env.ZNK_TRANSLATOR_ACCESS_KEY) {
+      logger.error("Invalid access key");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const targetLangs = Object.values(input.targetLang);
 
     logger.trace(`Target languages: ${targetLangs.join(", ")}`);
