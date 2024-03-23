@@ -39,9 +39,6 @@ app.post("/translate", async (req, res) => {
 
     const formattedTargetLangs = formatLangs(targetLangs);
 
-    const resultContents: Promise<any>[] = [];
-    const resultLangs: string[] = [];
-
     const resultBlocks = await Promise.all(
       formattedTargetLangs.map(async (targetLang) => {
         logger.trace(`Translating to ${targetLang}...`);
