@@ -14,6 +14,7 @@ const app = express();
 
 type Input = {
   accessKey: string;
+  deeplApiKey: string;
   contents: { [key: string]: string };
   sourceLang: deepl.SourceLanguageCode;
   targetLang: deepl.TargetLanguageCode | deepl.TargetLanguageCode[];
@@ -29,8 +30,11 @@ app.post("/translate", async (req, res) => {
     const input: Input = req.body;
 
     if (input.accessKey !== process.env.ZNK_TRANSLATOR_ACCESS_KEY) {
-      logger.error("Invalid access key");
-      return res.status(401).json({ error: "Unauthorized" });
+      logger.warn("Invalid access key");
+      return res.status(401).json({ error: "Invalid access key" });
+    } else if (!input.deeplApiKey) {
+      logger.warn("Deepl API key is not provided");
+      return res.status(401).json({ error: "Deepl API key is not provided" });
     }
 
     const targetLangs = Object.values(input.targetLang);
@@ -44,10 +48,13 @@ app.post("/translate", async (req, res) => {
         logger.trace(`Translating to ${targetLang}...`);
 
         const translator = new Translator(
+          input.deeplApiKey,
           input.sourceLang,
           targetLang,
           input.contents
         );
+
+        await translator.checkAvailability();
 
         const newContents = await translator.translate();
 
@@ -58,12 +65,10 @@ app.post("/translate", async (req, res) => {
       })
     );
 
-    console.log(resultBlocks);
-
     logger.trace("Done!");
     res.json(resultBlocks);
   } catch (err) {
-    logger.error("Error: ", err);
+    logger.error("Error: " + err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });

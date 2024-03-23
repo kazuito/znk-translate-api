@@ -8,15 +8,15 @@ config({
   path: path.join(__dirname, "../.env"),
 });
 
-const deeplTranslate = new deepl.Translator(process.env.DEEPL_API_KEY || "");
-
 export class Translator {
   private sourceLang: deepl.SourceLanguageCode;
   private targetLang: deepl.TargetLanguageCode;
   private inputObj: { [key: string]: any };
   private translateMap: Map<string, string> = new Map();
+  private translator: deepl.Translator;
 
   constructor(
+    deeplApiKey: string,
     sourceLang: deepl.SourceLanguageCode,
     targetLang: deepl.TargetLanguageCode,
     obj: { [key: string]: any }
@@ -24,6 +24,8 @@ export class Translator {
     this.sourceLang = sourceLang;
     this.targetLang = targetLang;
     this.inputObj = obj;
+
+    this.translator = new deepl.Translator(deeplApiKey);
   }
 
   public translate() {
@@ -66,7 +68,7 @@ export class Translator {
         return hash;
       }
 
-      return deeplTranslate
+      return this.translator
         .translateText(text, this.sourceLang, this.targetLang, {
           tagHandling: "html",
         })
@@ -111,7 +113,7 @@ export class Translator {
 
     const values = Array.from(this.translateMap.values());
 
-    const translatedValues = await deeplTranslate.translateText(
+    const translatedValues = await this.translator.translateText(
       values,
       this.sourceLang,
       this.targetLang
@@ -128,5 +130,14 @@ export class Translator {
     });
 
     return text;
+  }
+  public async checkAvailability() {
+    const usage = await this.translator.getUsage();
+
+    if (usage.anyLimitReached()) {
+      throw new Error("DeepL limit reached");
+    }
+
+    return true;
   }
 }
