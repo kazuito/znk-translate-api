@@ -2,7 +2,9 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "prod:start": "pm2 start ./dist/index.js --name znk-translator",
+    "prod:restart": "npm run build && pm2 restart znk-translator"
   },
   "dependencies": {
     "@types/jsdom": "^21.1.6",
