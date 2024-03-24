@@ -5,6 +5,7 @@ import { Translator } from "./translate";
 import { logger } from "./logger";
 import { config } from "dotenv";
 import path from "path";
+import { isAvailableTargetLang } from "./utils";
 
 config({
   path: path.join(__dirname, "../.env"),
@@ -30,11 +31,9 @@ app.post("/translate", async (req, res) => {
     const input: Input = req.body;
 
     if (input.accessKey !== process.env.ZNK_TRANSLATOR_ACCESS_KEY) {
-      logger.warn("Invalid access key");
-      return res.status(401).json({ error: "Invalid access key" });
+      throw new Error("Invalid access key");
     } else if (!input.deeplApiKey) {
-      logger.warn("Deepl API key is not provided");
-      return res.status(401).json({ error: "Deepl API key is not provided" });
+      throw new Error("Deepl API key is not provided");
     }
 
     const targetLangs = Object.values(input.targetLang);
@@ -43,10 +42,15 @@ app.post("/translate", async (req, res) => {
 
     const formattedTargetLangs = formatLangs(targetLangs);
 
+    // Check if the target languages are valid
+    formattedTargetLangs.forEach((lang) => {
+      if (!isAvailableTargetLang(lang)) {
+        throw new Error(`Invalid target language: '${lang}'`);
+      }
+    });
+
     const resultBlocks = await Promise.all(
       formattedTargetLangs.map(async (targetLang) => {
-        logger.trace(`Translating to ${targetLang}...`);
-
         const translator = new Translator(
           input.deeplApiKey,
           input.sourceLang,
@@ -67,8 +71,8 @@ app.post("/translate", async (req, res) => {
 
     logger.trace("Done!");
     res.json(resultBlocks);
-  } catch (err) {
-    logger.error("Error: " + err);
+  } catch (err: any) {
+    logger.error(err.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -81,6 +85,7 @@ function formatLangs(langs: string[]) {
   return langs.map((lang) => {
     if (lang === "en") return "en-US";
     if (lang === "pt") return "pt-PT";
+
     return lang as deepl.TargetLanguageCode;
   });
 }
